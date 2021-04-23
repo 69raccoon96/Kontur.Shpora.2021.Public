@@ -36,7 +36,7 @@ namespace ReaderWriterLock
         {
             lock (locker)
             {
-                while (readers > 0 && writers > 0)
+                while (readers > 0 || writers > 0)
                     Monitor.Wait(locker);
                 writers++;
                 
