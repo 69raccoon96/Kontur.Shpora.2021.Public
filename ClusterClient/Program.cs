@@ -19,23 +19,30 @@ namespace ClusterClient
             Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             XmlConfigurator.Configure(LogManager.GetRepository(Assembly.GetCallingAssembly()), new FileInfo("log4net.config"));
 
-            if (!TryGetReplicaAddresses(args, out var replicaAddresses))
-                return;
+            /*if (!TryGetReplicaAddresses(args, out var replicaAddresses))
+                return;*/
+            var replicaAddresses = new[]
+            {
+                "https://ya.ru/",
+                "https://www.google.com/"
+            };
 
             try
             {
                 var clients = new ClusterClientBase[]
                               {
-                                  new RandomClusterClient(replicaAddresses),
+                                  //new RandomClusterClient(replicaAddresses),
+                                  new SmartClusterClient(replicaAddresses), 
                               };
 
                 var queries = new[]
                 {
-                    "lorem", "ipsum", "dolor", "sit", "amet", "consectetuer",
-                    "adipiscing", "elit", "sed", "diam", "nonummy", "nibh", "euismod",
-                    "tincidunt", "ut", "laoreet", "dolore", "magna", "aliquam", "erat"
+                    "lorem", 
                 };
-
+                
+                /*"ipsum", "dolor", "sit", "amet", "consectetuer",
+                "adipiscing", "elit", "sed", "diam", "nonummy", "nibh", "euismod",
+                "tincidunt", "ut", "laoreet", "dolore", "magna", "aliquam", "erat"*/
                 foreach (var client in clients)
                 {
                     Console.WriteLine("Testing {0} started", client.GetType());
