@@ -40,8 +40,8 @@ namespace ClusterClient
 
         public string GetBestServer()
         {
-            if(CurrentIndex == SortedServers.Length)
-                throw new ArgumentOutOfRangeException("ServerIndex","No more servers");
+            if (CurrentIndex == SortedServers.Length)
+                CurrentIndex = 0;
             return SortedServers[CurrentIndex++].Name;
         }
 
@@ -64,7 +64,7 @@ namespace ClusterClient
             {
                 foreach (var server in _serversAddresses)
                 {
-                    var resultPing = Utilities.PingAddrAsync(Utilities.ConvertAddressToByteArray(server)).Result;
+                    var resultPing = Utilities.PingAddrAsync(IPAddress.Parse(server)).Result;
                     requests.Add(resultPing);
                 }
             }

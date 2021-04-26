@@ -20,7 +20,7 @@
 
     <ItemGroup>
       <None Update="ServerAddresses.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

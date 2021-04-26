@@ -52,14 +52,19 @@ namespace ClusterClient
                         {
                             Console.WriteLine("Query \"{0}\" timeout ({1} ms)", query, timer.ElapsedMilliseconds);
                         }
+                        catch (AggregateException ae)
+                        {
+                            Console.WriteLine("Query \"{0}\" caused error)", query);
+                            foreach(var e in ae.Flatten().InnerExceptions)
+                                _log.Error(e.ToString());
+                        }
                     }).ToArray());
                 Console.WriteLine("Testing {0} finished", _client.GetType());
             }
             catch (Exception e)
             {
-                _log.Fatal(e);
-                Console.WriteLine($"E :{e}");
-                Console.ReadKey();
+                Console.WriteLine("Error");
+                _log.Error(e.ToString());
             }
         }
     }

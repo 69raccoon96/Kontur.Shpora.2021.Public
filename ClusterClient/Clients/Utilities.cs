@@ -25,10 +25,5 @@ namespace ClusterClient.Clients
             return new RequestResult(ipAddr.ToString(), res.Status == IPStatus.Success, default,
                 new TimeSpan(res.RoundtripTime));
         }
-
-        public static IPAddress ConvertAddressToByteArray(string ip)
-        {
-            return IPAddress.Parse(ip);
-        }
     }
 }
