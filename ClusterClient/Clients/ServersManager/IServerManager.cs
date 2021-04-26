@@ -7,7 +7,6 @@ namespace ClusterClient.Clients.ServersManager
     {
         public int ServersCount { get; }
         public string GetBestServer();
-        public void UpdateServers(List<Task<RequestResult>> serverResults);
-        
+
     }
 }

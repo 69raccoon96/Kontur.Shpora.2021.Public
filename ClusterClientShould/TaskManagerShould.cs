@@ -17,27 +17,26 @@ namespace ClusterClientShould
         {
             var servers = new[]
             {
-                "http://127.0.0.1:8060/qqq/",
-                "http://127.0.0.1:8010/qqq/",
-                "http://127.0.0.1:8020/qqq/"
+                "87.250.250.242",
+                "172.217.18.110",
             };
-            _serversManager = new ServersManager(new FCLArgumentParser(), servers);
+            _serversManager = new ServersManager(new FCLArgumentParser(), new [] {"ServerAddresses.txt"});
         }
 
         [Test]
+        public void Constructor_CorrectSortServers()
+        {
+            _serversManager.GetBestServer();
+        }
+        
+
+        /*[Test]
         public void GetBestServer_CorrectSortedByFailedTimes()
         {
             var expectedServer = "http://127.0.0.1:8060/qqq/";
-            var requestResults = new List<Task<RequestResult>>
-            {
-                Task.FromResult(new RequestResult("http://127.0.0.1:8010/qqq/")),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8060/qqq/", true, default, new TimeSpan(10))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8020/qqq/")),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8010/qqq/", true,default, new TimeSpan(1))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8020/qqq/", true, default, new TimeSpan(1)))
-            };
             
-            _serversManager.UpdateServers(requestResults);
+            
+            //_serversManager.UpdateServers(requestResults);
             var actualBestServer = _serversManager.GetBestServer();
 
             expectedServer.Should().BeSameAs(actualBestServer);
@@ -59,20 +58,11 @@ namespace ClusterClientShould
         public void GetBestServer_CorrectSortedByAverageTime()
         {
             var expectedServer = "http://127.0.0.1:8010/qqq/";
-            var requestResults = new List<Task<RequestResult>>
-            {
-                Task.FromResult(new RequestResult("http://127.0.0.1:8010/qqq/", true, default, new TimeSpan(30))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8010/qqq/",true, default, new TimeSpan(40))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8060/qqq/", true,default, new TimeSpan(100))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8020/qqq/", true, default, new TimeSpan(20))),
-                Task.FromResult(new RequestResult("http://127.0.0.1:8020/qqq/", true, default, new TimeSpan(60)))
-            };
-
-            _serversManager.UpdateServers(requestResults);
+            
             var actualBestServer = _serversManager.GetBestServer();
 
             expectedServer.Should().BeSameAs(actualBestServer);
-        }
+        }*/
 
         /*[Test]
         public void GetBestServer_CorrectSortedByAverageTimeAndFailedTimes()

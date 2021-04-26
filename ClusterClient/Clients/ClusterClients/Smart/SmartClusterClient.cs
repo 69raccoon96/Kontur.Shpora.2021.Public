@@ -43,8 +43,6 @@ namespace ClusterClient
                 startedTasks++;
                 tasks.Add(task);
             }
-
-            _serversManager.UpdateServers(tasks);
             var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
             Console.WriteLine("I finished: " + sw.ElapsedMilliseconds);
             
@@ -74,7 +72,7 @@ namespace ClusterClient
 
         private Task<string> ProcessRequestAsync2(string request)
         {
-            var time = new Random().Next(500, 11500);
+            var time = new Random().Next(500, 1000);
             Console.WriteLine("Сервер: " + request + " Время сна: " + time);
             Thread.Sleep(time);
 

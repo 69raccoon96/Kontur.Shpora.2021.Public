@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using ClusterClient.Clients;
 using ClusterClient.Clients.ArgumentParsers;
 using ClusterClient.Clients.ServersManager;
 
@@ -32,6 +34,7 @@ namespace ClusterClient
                 SortedServers[index] = serverToAdd;
                 index++;
             }
+            UpdateServers();
         }
 
 
@@ -42,27 +45,30 @@ namespace ClusterClient
             return SortedServers[CurrentIndex++].Name;
         }
 
-        public void UpdateServers(List<Task<RequestResult>> serverResults)
+        private void UpdateServers()
         {
-            /*var notUpdatedServers = _serversAddresses.ToList();
-            foreach (var serverResult in serverResults)
-            {
-                var requestResult = serverResult.Result;
+            
+            foreach (var requestResult in GetServersRequests())
                 _servers[requestResult.ServerName].UpdateInfo(requestResult.IsSuccess, requestResult.Time);
-                notUpdatedServers.Remove(requestResult.ServerName);
-
-            }
-
-            foreach (var notUpdatedServer in notUpdatedServers)
-            {
-                _servers[notUpdatedServer].UpdateInfo(false);
-            }
 
             SortedServers = SortedServers.Select(x => x)
                 .OrderBy(x => x.FailedTimes)
                 .ThenBy(x => x.AverageTimeResponse)
-                .ToArray();*/
-            CurrentIndex = 0;
+                .ToArray();
+        }
+
+        private List<RequestResult> GetServersRequests()
+        {
+            var requests = new List<RequestResult>();
+            for (var i = 0; i < 3; i++)
+            {
+                foreach (var server in _serversAddresses)
+                {
+                    var resultPing = Utilities.PingAddrAsync(Utilities.ConvertAddressToByteArray(server)).Result;
+                    requests.Add(resultPing);
+                }
+            }
+            return requests;
         }
     }
 }
