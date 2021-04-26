@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClusterClient.Clients;
@@ -13,10 +16,12 @@ namespace ClusterClient
     public class SmartClusterClient : IClient
     {
         private readonly IServerManager _serversManager;
+        public ILog Log { get; }
 
-        public SmartClusterClient(IServerManager serverManager)
+        public SmartClusterClient(IServerManager serverManager, ILog log)
         {
             _serversManager = serverManager;
+            Log = log;
         }
 
         public Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
@@ -24,69 +29,65 @@ namespace ClusterClient
             var serversCount = _serversManager.ServersCount;
             var tasks = new List<Task<RequestResult>>();
             var delta = (int) timeout.TotalMilliseconds / (serversCount + 1);
-            var pull = (int) timeout.TotalMilliseconds;
-            var startedServers = 0;
-            while (startedServers != serversCount)
+            var timeToAdd = 0;
+            var startedTasks = 0;
+            var sw = Stopwatch.StartNew();
+            while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
             {
-                var pull1 = pull;
-                var task = new Task<RequestResult>(() => CreateTask(query, pull1).Result);
-                task.Start();
-                tasks.Add(task);
-                pull -= delta;
-                startedServers++;
-                Thread.Sleep(delta);
+                if (sw.ElapsedMilliseconds < timeToAdd || startedTasks == _serversManager.ServersCount) continue;
                 if (tasks.Any(x => x.Status == TaskStatus.RanToCompletion))
                     break;
+                timeToAdd += delta;
+                var task = new Task<RequestResult>(() => CreateTask(query).Result);
+                task.Start();
+                startedTasks++;
+                tasks.Add(task);
             }
 
-            //Thread.Sleep(delta);
             _serversManager.UpdateServers(tasks);
-
             var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
+            Console.WriteLine("I finished: " + sw.ElapsedMilliseconds);
+            
             if (completedTask == null)
                 throw new TimeoutException();
-            foreach(var task in tasks)
-                task.Dispose();
-            GC.Collect();
             return Task.FromResult(completedTask.Result.Result);
         }
 
-        public ILog Log { get; }
-
-        private async Task<RequestResult> CreateTask(string query, int timeout)
+        private async Task<RequestResult> CreateTask(string query)
         {
-            
             var server = _serversManager.GetBestServer();
-            var token = new CancellationTokenSource();
+            var webRequest = Utilities.CreateRequest(server + "?query=" + query);
+            Log.InfoFormat($"Processing {webRequest.RequestUri}");
+            var sw = Stopwatch.StartNew();
             try
             {
-                token.CancelAfter(timeout);
-                //var webRequest = CreateRequest(server + "?query=" + query);
+               //var reqResult = await ProcessRequestAsync(webRequest);
+               var reqResult = await ProcessRequestAsync2(server); 
+               return new RequestResult(server, true, reqResult, new TimeSpan(sw.ElapsedTicks));
+            }
+            catch
+            {
+                return new RequestResult(server);
+            }
 
-                //Log.InfoFormat($"Processing {webRequest.RequestUri}");
-                var sw = Stopwatch.StartNew();
-                //var reqResult = await ProcessRequestAsync(webRequest);
-                var reqResult = await ProcessRequestAsync2(server); 
-                //Console.WriteLine("I was here");
-                return await Task.FromResult(new RequestResult(server, true, reqResult, new TimeSpan(sw.ElapsedTicks)));
-            }
-            catch (TaskCanceledException)
-            {
-                //Console.WriteLine("\nTasks cancelled: timed out.\n");
-                return await Task.FromResult(new RequestResult(server));
-            }
-            finally
-            {
-                token.Dispose();
-            }
         }
 
         private Task<string> ProcessRequestAsync2(string request)
         {
-            var time = new Random().Next(2000, 10000);
-           // Console.WriteLine("Сервер: " + request + " Время сна: " + time);
+            var time = new Random().Next(500, 11500);
+            Console.WriteLine("Сервер: " + request + " Время сна: " + time);
             Thread.Sleep(time);
+
             return Task.FromResult("ok");
+        }
+
+        private async Task<string> ProcessRequestAsync(WebRequest request)
+        {
+            var timer = Stopwatch.StartNew();
+            using var response = await request.GetResponseAsync();
+            var result = await new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEndAsync();
+            Log.InfoFormat("Response from {0} received in {1} ms", request.RequestUri, timer.ElapsedMilliseconds);
+            return result;
         }
     }
 }

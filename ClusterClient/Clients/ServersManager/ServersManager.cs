@@ -12,12 +12,14 @@ namespace ClusterClient
         public int ServersCount { get; }
         private ServerData[] SortedServers { get; set;}
         private readonly Dictionary<string, ServerData> _servers;
+        private readonly string[] _serversAddresses;
         private int CurrentIndex { get; set; }
 
         public ServersManager(IArgumentParser argumentParser, string[] args)
         {
             if(!argumentParser.TryGetReplicaAddresses(args, out var addresses))
                 throw new Exception("no file");
+            _serversAddresses = addresses;
             ServersCount = addresses.Length;
             SortedServers = new ServerData[addresses.Length];
             CurrentIndex = 0;
@@ -42,16 +44,24 @@ namespace ClusterClient
 
         public void UpdateServers(List<Task<RequestResult>> serverResults)
         {
+            /*var notUpdatedServers = _serversAddresses.ToList();
             foreach (var serverResult in serverResults)
             {
                 var requestResult = serverResult.Result;
                 _servers[requestResult.ServerName].UpdateInfo(requestResult.IsSuccess, requestResult.Time);
+                notUpdatedServers.Remove(requestResult.ServerName);
+
+            }
+
+            foreach (var notUpdatedServer in notUpdatedServers)
+            {
+                _servers[notUpdatedServer].UpdateInfo(false);
             }
 
             SortedServers = SortedServers.Select(x => x)
                 .OrderBy(x => x.FailedTimes)
                 .ThenBy(x => x.AverageTimeResponse)
-                .ToArray();
+                .ToArray();*/
             CurrentIndex = 0;
         }
     }

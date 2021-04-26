@@ -36,7 +36,7 @@ namespace ClusterClient
                     "adipiscing", "elit", "sed", "diam", "nonummy", "nibh", "euismod",
                     "tincidunt", "ut", "laoreet", "dolore", "magna", "aliquam", "erat"
                 };
-
+                
                 Console.WriteLine("Testing {0} started", _client.GetType());
                 Task.WaitAll(queries.Select(
                     async query =>
@@ -60,6 +60,7 @@ namespace ClusterClient
             {
                 _log.Fatal(e);
                 Console.WriteLine($"E :{e}");
+                Console.ReadKey();
             }
         }
     }
