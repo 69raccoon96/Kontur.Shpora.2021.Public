@@ -19,13 +19,13 @@ namespace ClusterClient
             Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             XmlConfigurator.Configure(LogManager.GetRepository(Assembly.GetCallingAssembly()), new FileInfo("log4net.config"));
 
-            /*if (!TryGetReplicaAddresses(args, out var replicaAddresses))
-                return;*/
-            var replicaAddresses = new[]
+            if (!TryGetReplicaAddresses(args, out var replicaAddresses))
+                return;
+            /*var replicaAddresses = new[]
             {
                 "https://ya.ru/",
                 "https://www.google.com/"
-            };
+            };*/
 
             try
             {

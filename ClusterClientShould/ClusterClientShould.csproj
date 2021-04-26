@@ -18,4 +18,10 @@
       <ProjectReference Include="..\ClusterClient\ClusterClient.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="ServerAddresses.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

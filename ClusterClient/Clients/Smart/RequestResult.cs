@@ -6,15 +6,16 @@ namespace ClusterClient
     {
         public string Result { get; }
         public TimeSpan Time { get; }
-        
         public string ServerName { get; }
-        
+        public bool IsSuccess { get; }
 
-        public RequestResult(string serverName, string result = null, TimeSpan time = default)
+
+        public RequestResult(string serverName, bool isSuccess = false, string result = null, TimeSpan time = default)
         {
             Time = time;
             Result = result;
             ServerName = serverName;
+            IsSuccess = isSuccess;
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ClusterClient
 {
-    public class TasksManager
+    public class ServersManager
     {
         private ServerData[] _sortedServers;
         private readonly Dictionary<string, ServerData> _servers; 
         private int _currentIndex;
 
-        public TasksManager(IReadOnlyCollection<string> servers)
+        public ServersManager(IReadOnlyCollection<string> servers)
         {
             _sortedServers = new ServerData[servers.Count];
             _currentIndex = 0;
@@ -32,12 +33,15 @@ namespace ClusterClient
             return _sortedServers[_currentIndex++].Name;
         }
 
-        public void UpdateServer(string name, bool isSuccess, TimeSpan time = default)
+        public void UpdateServers(List<Task<RequestResult>> serverResults)
         {
-            _currentIndex = 0;
-            _servers[name].UpdateInfo(isSuccess, time);
-            _sortedServers = _sortedServers
-                .Select(x => x)
+            foreach (var serverResult in serverResults)
+            {
+                var requestResult = serverResult.Result;
+                _servers[requestResult.ServerName].UpdateInfo(requestResult.IsSuccess, requestResult.Time);
+            }
+
+            _sortedServers = _sortedServers.Select(x => x)
                 .OrderBy(x => x.FailedTimes)
                 .ThenBy(x => x.AverageTimeResponse)
                 .ToArray();
