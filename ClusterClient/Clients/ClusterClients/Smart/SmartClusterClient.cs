@@ -44,7 +44,6 @@ namespace ClusterClient
                 tasks.Add(task);
             }
             var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
-            Console.WriteLine("I finished: " + sw.ElapsedMilliseconds);
             _serversManager.Restart();
             if (completedTask == null)
                 throw new TimeoutException();
