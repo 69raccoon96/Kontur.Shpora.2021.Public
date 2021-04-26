@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ClusterClient.Clients;
 using ClusterClient.Clients.ArgumentParsers;
@@ -41,8 +42,13 @@ namespace ClusterClient
         public string GetBestServer()
         {
             if (CurrentIndex == SortedServers.Length)
-                CurrentIndex = 0;
+                throw  new Exception("No more servers");
             return SortedServers[CurrentIndex++].Name;
+        }
+
+        public void Restart()
+        {
+            CurrentIndex = 0;
         }
 
         private void UpdateServers()
@@ -59,12 +65,16 @@ namespace ClusterClient
 
         private List<RequestResult> GetServersRequests()
         {
+            var pattern = "^(?:https?:\\/\\/)?(?:[^@\\/\n]+@)?(?:www\\.)?([^\\/?\n]+)";
+            var regex = new Regex(pattern);
             var requests = new List<RequestResult>();
             for (var i = 0; i < 3; i++)
             {
                 foreach (var server in _serversAddresses)
                 {
-                    var resultPing = Utilities.PingAddrAsync(IPAddress.Parse(server)).Result;
+                    var clearedIp = regex.Match(server).Groups.Values.ElementAt(1).Value;
+                    var resultPing = Utilities.PingAddrAsync(IPAddress.Parse(clearedIp)).Result;
+                    resultPing.ServerName = server;
                     requests.Add(resultPing);
                 }
             }

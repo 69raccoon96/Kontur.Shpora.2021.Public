@@ -6,7 +6,7 @@ namespace ClusterClient
     {
         public string Result { get; }
         public TimeSpan Time { get; }
-        public string ServerName { get; }
+        public string ServerName { get; set; }
         public bool IsSuccess { get; }
 
 

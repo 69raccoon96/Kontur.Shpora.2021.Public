@@ -45,7 +45,7 @@ namespace ClusterClient
             }
             var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
             Console.WriteLine("I finished: " + sw.ElapsedMilliseconds);
-            
+            _serversManager.Restart();
             if (completedTask == null)
                 throw new TimeoutException();
             return Task.FromResult(completedTask.Result.Result);
@@ -59,8 +59,8 @@ namespace ClusterClient
             var sw = Stopwatch.StartNew();
             try
             {
-               //var reqResult = await ProcessRequestAsync(webRequest);
-               var reqResult = await ProcessRequestAsync2(server); 
+               var reqResult = await ProcessRequestAsync(webRequest);
+               //var reqResult = await ProcessRequestAsync2(server); 
                return new RequestResult(server, true, reqResult, new TimeSpan(sw.ElapsedTicks));
             }
             catch
