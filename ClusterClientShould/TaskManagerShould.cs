@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ClusterClient;
+using ClusterClient.Clients.ArgumentParsers;
 using NUnit.Framework;
 using FluentAssertions;
 
@@ -20,7 +21,7 @@ namespace ClusterClientShould
                 "http://127.0.0.1:8010/qqq/",
                 "http://127.0.0.1:8020/qqq/"
             };
-            _serversManager = new ServersManager(servers);
+            _serversManager = new ServersManager(new FCLArgumentParser(), servers);
         }
 
         [Test]

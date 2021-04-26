@@ -2,35 +2,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ClusterClient.Clients.ArgumentParsers;
+using ClusterClient.Clients.ServersManager;
 
 namespace ClusterClient
 {
-    public class ServersManager
+    public class ServersManager : IServerManager
     {
-        private ServerData[] _sortedServers;
-        private readonly Dictionary<string, ServerData> _servers; 
-        private int _currentIndex;
+        public int ServersCount { get; }
+        private ServerData[] SortedServers { get; set;}
+        private readonly Dictionary<string, ServerData> _servers;
+        private int CurrentIndex { get; set; }
 
-        public ServersManager(IReadOnlyCollection<string> servers)
+        public ServersManager(IArgumentParser argumentParser, string[] args)
         {
-            _sortedServers = new ServerData[servers.Count];
-            _currentIndex = 0;
+            if(!argumentParser.TryGetReplicaAddresses(args, out var addresses))
+                throw new Exception("no file");
+            ServersCount = addresses.Length;
+            SortedServers = new ServerData[addresses.Length];
+            CurrentIndex = 0;
             _servers = new Dictionary<string, ServerData>();
             var index = 0;
-            foreach (var server in servers)
+            foreach (var server in addresses)
             {
                 var serverToAdd = new ServerData(server);
                 _servers.Add(server, serverToAdd);
-                _sortedServers[index] = serverToAdd;
+                SortedServers[index] = serverToAdd;
                 index++;
             }
         }
 
+
         public string GetBestServer()
         {
-            if(_currentIndex == _sortedServers.Length)
+            if(CurrentIndex == SortedServers.Length)
                 throw new ArgumentOutOfRangeException("ServerIndex","No more servers");
-            return _sortedServers[_currentIndex++].Name;
+            return SortedServers[CurrentIndex++].Name;
         }
 
         public void UpdateServers(List<Task<RequestResult>> serverResults)
@@ -41,10 +48,11 @@ namespace ClusterClient
                 _servers[requestResult.ServerName].UpdateInfo(requestResult.IsSuccess, requestResult.Time);
             }
 
-            _sortedServers = _sortedServers.Select(x => x)
+            SortedServers = SortedServers.Select(x => x)
                 .OrderBy(x => x.FailedTimes)
                 .ThenBy(x => x.AverageTimeResponse)
                 .ToArray();
+            CurrentIndex = 0;
         }
     }
 }

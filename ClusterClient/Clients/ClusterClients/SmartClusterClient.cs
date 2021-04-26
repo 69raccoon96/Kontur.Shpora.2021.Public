@@ -5,29 +5,28 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClusterClient.Clients;
+using ClusterClient.Clients.ServersManager;
 using log4net;
 
 namespace ClusterClient
 {
-    public class SmartClusterClient : ClusterClientBase
+    public class SmartClusterClient : IClient
     {
-        private readonly ServersManager _serversManager;
-        private readonly int _serversCount;
-        protected override ILog Log { get; }
+        private readonly IServerManager _serversManager;
 
-        public SmartClusterClient(string[] replicaAddresses) : base(replicaAddresses)
+        public SmartClusterClient(IServerManager serverManager)
         {
-            _serversManager = new ServersManager(replicaAddresses);
-            _serversCount = replicaAddresses.Length;
+            _serversManager = serverManager;
         }
 
-        public async override Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
+            var serversCount = _serversManager.ServersCount;
             var tasks = new List<Task<RequestResult>>();
-            var delta = (int) timeout.TotalMilliseconds / (_serversCount + 1);
-            var pull = timeout.Seconds * 1000;
+            var delta = (int) timeout.TotalMilliseconds / (serversCount + 1);
+            var pull = (int) timeout.TotalMilliseconds;
             var startedServers = 0;
-            while (startedServers != _serversCount)
+            while (startedServers != serversCount)
             {
                 var pull1 = pull;
                 var task = new Task<RequestResult>(() => CreateTask(query, pull1).Result);
@@ -40,14 +39,19 @@ namespace ClusterClient
                     break;
             }
 
-            Thread.Sleep(delta);
-            new Task(() => _serversManager.UpdateServers(tasks)).Start();
+            //Thread.Sleep(delta);
+            _serversManager.UpdateServers(tasks);
 
             var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
             if (completedTask == null)
                 throw new TimeoutException();
-            return completedTask.Result.Result;
+            foreach(var task in tasks)
+                task.Dispose();
+            GC.Collect();
+            return Task.FromResult(completedTask.Result.Result);
         }
+
+        public ILog Log { get; }
 
         private async Task<RequestResult> CreateTask(string query, int timeout)
         {
@@ -57,18 +61,18 @@ namespace ClusterClient
             try
             {
                 token.CancelAfter(timeout);
-                /*var webRequest = CreateRequest(server + "?query=" + query);
+                //var webRequest = CreateRequest(server + "?query=" + query);
 
-                Log.InfoFormat($"Processing {webRequest.RequestUri}");*/
+                //Log.InfoFormat($"Processing {webRequest.RequestUri}");
                 var sw = Stopwatch.StartNew();
                 //var reqResult = await ProcessRequestAsync(webRequest);
                 var reqResult = await ProcessRequestAsync2(server); 
-                Console.WriteLine("I was here");
+                //Console.WriteLine("I was here");
                 return await Task.FromResult(new RequestResult(server, true, reqResult, new TimeSpan(sw.ElapsedTicks)));
             }
             catch (TaskCanceledException)
             {
-                Console.WriteLine("\nTasks cancelled: timed out.\n");
+                //Console.WriteLine("\nTasks cancelled: timed out.\n");
                 return await Task.FromResult(new RequestResult(server));
             }
             finally
@@ -79,8 +83,8 @@ namespace ClusterClient
 
         private Task<string> ProcessRequestAsync2(string request)
         {
-            var time = new Random().Next(2000, 6000);
-            Console.WriteLine("Сервер: " + request + " Время сна: " + time);
+            var time = new Random().Next(2000, 10000);
+           // Console.WriteLine("Сервер: " + request + " Время сна: " + time);
             Thread.Sleep(time);
             return Task.FromResult("ok");
         }
