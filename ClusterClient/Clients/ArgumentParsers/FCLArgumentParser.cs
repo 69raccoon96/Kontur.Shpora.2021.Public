@@ -10,7 +10,7 @@ namespace ClusterClient.Clients.ArgumentParsers
         {
             var argumentsParser = new FluentCommandLineParser();
             string[] result = { };
-
+            var a = File.ReadAllText("SmartReplics.txt");
             argumentsParser.Setup<string>(CaseType.CaseInsensitive, "f", "file")
                 .WithDescription("Path to the file with replica addresses")
                 .Callback(fileName => result = File.ReadAllLines(fileName))

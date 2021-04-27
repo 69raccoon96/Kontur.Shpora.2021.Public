@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Diagnostics;
 using System.Linq;
 using ClusterClient;
@@ -12,9 +12,8 @@ namespace ClusterTests
 {
 	public class ParallelClusterClientTest : ClusterTest
 	{
-		protected override SmartClusterClient CreateClient(string[] replicaAddresses)
-			=> new SmartClusterClient(new ServersManager(new FCLArgumentParser(),new [] {"-f:SmartReplics.txt"} ),LogManager.GetLogger(typeof(SmartClusterClientTest)));
-
+		protected override ParallelClusterClient  CreateClient(string[] replicaAddresses)
+			=> new ParallelClusterClient(replicaAddresses);
 		[Test]
 		public void ShouldReturnSuccessWhenLastReplicaIsGoodAndOthersAreSlow()
 		{
@@ -57,4 +56,4 @@ namespace ClusterTests
             sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(Fast), TimeSpan.FromMilliseconds(Epsilon));
         }
     }
-}
+}*/

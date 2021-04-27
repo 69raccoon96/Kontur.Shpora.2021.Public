@@ -7,17 +7,17 @@ using log4net;
 
 namespace ClusterClient.Clients
 {
-    public class ParallelClusterClient : IClient
+    public class ParallelClusterClient : ClusterClientBase
     {
-        public ParallelClusterClient(string[] replicaAddresses)
+        public ParallelClusterClient(string[] replicaAddresses) : base(null)
         {
         }
 
-        public  Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public override Task<string?> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             throw new NotImplementedException();
         }
 
-        public  ILog Log => LogManager.GetLogger(typeof(ParallelClusterClient));
+        public override ILog Log => LogManager.GetLogger(typeof(ParallelClusterClient));
     }
 }

@@ -23,7 +23,7 @@ namespace ClusterClient.Clients
             Log = log;
         }
 
-        public async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public async Task<string?> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             var uri = ReplicaAddresses[random.Next(ReplicaAddresses.Length)];
 

@@ -20,8 +20,8 @@ namespace ClusterClient
 
         public ServersManager(IArgumentParser argumentParser, string[] args)
         {
-            if(!argumentParser.TryGetReplicaAddresses(args, out var addresses))
-                throw new Exception("no file");
+            if (!argumentParser.TryGetReplicaAddresses(args, out var addresses))
+                addresses = args;
             _serversAddresses = addresses;
             ServersCount = addresses.Length;
             SortedServers = new ServerData[addresses.Length];
@@ -35,7 +35,7 @@ namespace ClusterClient
                 SortedServers[index] = serverToAdd;
                 index++;
             }
-            UpdateServers();
+            //UpdateServers();
         }
 
 

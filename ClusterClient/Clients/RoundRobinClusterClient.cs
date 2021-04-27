@@ -13,7 +13,7 @@ namespace ClusterClient.Clients
         {
         }
 
-        public Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public Task<string?> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             throw new NotImplementedException();
         }
