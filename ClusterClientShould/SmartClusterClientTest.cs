@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using ClusterClient;
 using ClusterClient.Clients;
+using ClusterClient.Clients.ArgumentParsers;
 using FluentAssertions;
+using log4net;
 using NUnit.Framework;
 
 namespace ClusterTests
 {
 	public class SmartClusterClientTest : ClusterTest
 	{
-		protected override ClusterClientBase CreateClient(string[] replicaAddresses)
-			=> new SmartClusterClient(replicaAddresses);
+		protected override SmartClusterClient CreateClient(string[] replicaAddresses)
+			=> new SmartClusterClient(new ServersManager(new FCLArgumentParser(),replicaAddresses ),LogManager.GetLogger(typeof(SmartClusterClientTest)));
 
 		[Test]
 		public void ShouldReturnSuccessWhenLastReplicaIsGoodAndOthersAreSlow()
@@ -19,7 +22,7 @@ namespace ClusterTests
 				CreateServer(Slow);
 			CreateServer(Fast);
 
-			ProcessRequests(Timeout).Last().Should().BeCloseTo(TimeSpan.FromMilliseconds(3 * Timeout / 4 + Fast), Epsilon);
+			ProcessRequests(Timeout).Last().Should().BeCloseTo(TimeSpan.FromMilliseconds(3 * Timeout / 4 + Fast), TimeSpan.FromMilliseconds(Epsilon));
 		}
 
 		[Test]
@@ -29,7 +32,7 @@ namespace ClusterTests
 				CreateServer(1, status: 500);
 			CreateServer(Fast);
 
-			ProcessRequests(Timeout).Last().Should().BeCloseTo(TimeSpan.FromMilliseconds(Fast), Epsilon);
+			ProcessRequests(Timeout).Last().Should().BeCloseTo(TimeSpan.FromMilliseconds(Fast), TimeSpan.FromMilliseconds(Epsilon));
 		}
 
 		[Test]
@@ -40,7 +43,7 @@ namespace ClusterTests
 
 			var sw = Stopwatch.StartNew();
 			Assert.Throws<TimeoutException>(() => ProcessRequests(Timeout));
-			sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(Timeout), Epsilon);
+			sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(Timeout), TimeSpan.FromMilliseconds(Epsilon));
 		}
 
 		[Test]
@@ -51,7 +54,7 @@ namespace ClusterTests
 			CreateServer(10000);
 
 			foreach(var time in ProcessRequests(6000))
-				time.Should().BeCloseTo(TimeSpan.FromMilliseconds(4500), Epsilon);
+				time.Should().BeCloseTo(TimeSpan.FromMilliseconds(4500), TimeSpan.FromMilliseconds(Epsilon));
 		}
 
 		[Test]
@@ -63,7 +66,7 @@ namespace ClusterTests
 			CreateServer(10000);
 
 			foreach(var time in ProcessRequests(6000))
-				time.Should().BeCloseTo(TimeSpan.FromMilliseconds(4000), Epsilon);
+				time.Should().BeCloseTo(TimeSpan.FromMilliseconds(4000), TimeSpan.FromMilliseconds(Epsilon));
 		}
 	}
 }

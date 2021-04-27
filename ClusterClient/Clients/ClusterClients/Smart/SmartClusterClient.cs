@@ -13,18 +13,18 @@ using log4net;
 
 namespace ClusterClient
 {
-    public class SmartClusterClient : IClient
+    public class SmartClusterClient : ClusterClientBase
     {
         private readonly IServerManager _serversManager;
-        public ILog Log { get; }
+        public override ILog Log { get; }
 
-        public SmartClusterClient(IServerManager serverManager, ILog log)
+        public SmartClusterClient(IServerManager serverManager, ILog log) : base(null)
         {
             _serversManager = serverManager;
             Log = log;
         }
 
-        public Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public override Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             var serversCount = _serversManager.ServersCount;
             var tasks = new List<Task<RequestResult>>();

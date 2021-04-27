@@ -7,17 +7,17 @@ using log4net;
 
 namespace ClusterClient.Clients
 {
-    public class RoundRobinClusterClient : ClusterClientBase
+    public class RoundRobinClusterClient : IClient
     {
-        public RoundRobinClusterClient(string[] replicaAddresses) : base(replicaAddresses)
+        public RoundRobinClusterClient(string[] replicaAddresses) 
         {
         }
 
-        public override Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             throw new NotImplementedException();
         }
 
-        protected override ILog Log => LogManager.GetLogger(typeof(RoundRobinClusterClient));
+        public ILog Log => LogManager.GetLogger(typeof(RoundRobinClusterClient));
     }
 }

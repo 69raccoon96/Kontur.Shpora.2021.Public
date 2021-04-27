@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLUnhandledExceptionSample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClusterClientShould", "ClusterClientShould\ClusterClientShould.csproj", "{2B0DA865-5206-44FA-9702-F2AB7A68044C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClusterTests", "ClusterTests\ClusterTests.csproj", "{29F017BF-CD95-40BD-BE96-E818A572835C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,10 @@ Global
 		{2B0DA865-5206-44FA-9702-F2AB7A68044C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B0DA865-5206-44FA-9702-F2AB7A68044C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B0DA865-5206-44FA-9702-F2AB7A68044C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29F017BF-CD95-40BD-BE96-E818A572835C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29F017BF-CD95-40BD-BE96-E818A572835C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29F017BF-CD95-40BD-BE96-E818A572835C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29F017BF-CD95-40BD-BE96-E818A572835C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +129,7 @@ Global
 		{670358FB-715E-4F27-9679-F0C82858BC34} = {E1655F63-686F-4FE2-9D93-AE36498A447B}
 		{45F6AB7A-DC8D-4E0A-9E9B-116C25ED188E} = {E1655F63-686F-4FE2-9D93-AE36498A447B}
 		{2B0DA865-5206-44FA-9702-F2AB7A68044C} = {E1655F63-686F-4FE2-9D93-AE36498A447B}
+		{29F017BF-CD95-40BD-BE96-E818A572835C} = {E1655F63-686F-4FE2-9D93-AE36498A447B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A68F331E-DF3F-4F8B-88F7-D49C00244C39}

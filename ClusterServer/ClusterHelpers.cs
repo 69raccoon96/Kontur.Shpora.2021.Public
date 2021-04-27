@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Cluster
 {
-    internal static class ClusterHelpers
+    public static class ClusterHelpers
     {
         public static byte[] GetBase64HashBytes(string query)
         {

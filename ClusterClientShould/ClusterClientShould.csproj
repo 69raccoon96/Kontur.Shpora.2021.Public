@@ -16,11 +16,15 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ClusterClient\ClusterClient.csproj" />
+      <ProjectReference Include="..\ClusterServer\ClusterServer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Update="ServerAddresses.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="log4net.config">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

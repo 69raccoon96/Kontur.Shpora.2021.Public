@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿/*using System.Linq;
 using ClusterClient.Clients;
 using FluentAssertions;
 using NUnit.Framework;
@@ -7,7 +7,7 @@ namespace ClusterTests
 {
 	public class RandomClusterClientTest : ClusterTest
 	{
-		protected override ClusterClientBase CreateClient(string[] replicaAddresses)
+		protected override ParallelClusterClient CreateClient(string[] replicaAddresses)
 			=> new RandomClusterClient(replicaAddresses);
 
 		[Test]
@@ -32,4 +32,4 @@ namespace ClusterTests
 				.Sum().Should().BeCloseTo(100, 20);
 		}
 	}
-}
+}*/
