@@ -25,7 +25,7 @@ namespace ClusterClient.Clients
             var delta =  timeout.Divide(_servers.Length);
             var goodServers = _servers.Length;
             var sw = Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
+            while (sw.Elapsed < timeout)
             {
                 var currentServer = _servers[index];
                 var task = Task.Factory.StartNew(() => CreateTask(query, currentServer).Result);

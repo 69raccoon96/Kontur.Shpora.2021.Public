@@ -33,11 +33,10 @@ namespace ClusterClient
             var tasks = new List<Task<string>>();
             var delta = timeout.Divide(serversCount);
             var sw = Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
+            while (sw.Elapsed < timeout)
             {
                 var index1 = index;
-                var task = new Task<string>(() => CreateTask(query, servers[index1]).Result);
-                task.Start();
+                var task = Task.Factory.StartNew(() => CreateTask(query, servers[index1]).Result);
                 tasks.Add(task);
                 index++;
                 var currentIndex = await Task.Factory.StartNew(() =>Task.WaitAny(tasks.ToArray(), delta));
@@ -46,7 +45,7 @@ namespace ClusterClient
                 {
                     if (tasks[currentIndex].IsCompletedSuccessfully)
                         return tasks[currentIndex].Result;
-                    tasks = tasks.Where(x => !x.IsFaulted).ToList();
+                    tasks.RemoveAll(x => x.IsFaulted);
                 }
                 
 

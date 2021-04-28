@@ -20,18 +20,22 @@ namespace ClusterClient.Clients
 
         public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
-            var tasks = new List<Task<string>>();
-            foreach (var server in servers)
+            var tasks = servers.Select(server => Task<string>.Factory.StartNew(() => CreateTask(query, server).Result)).ToList();
+            var sw = Stopwatch.StartNew();
+            var waiter = timeout.Duration();
+            while (sw.Elapsed < timeout)
             {
-                var task = Task<string>.Factory.StartNew(() => CreateTask(query, server).Result);
-                tasks.Add(task);
+                var res = await Task.Factory.StartNew(() => Task.WaitAny(tasks.ToArray(), timeout));
+                if (res != -1)
+                {
+                    if(tasks[res].IsCompletedSuccessfully)
+                        return tasks[res].Result;
+                    tasks.RemoveAll(x => x.IsFaulted);
+                    waiter = waiter.Subtract(sw.Elapsed);
+                }else
+                    break;
             }
-
-            var res = await Task.Factory.StartNew(() => Task.WaitAny(tasks.ToArray(), timeout));
-            if(res == -1)
-                throw new TimeoutException();
-            return tasks[res].Result;
-
+            throw new TimeoutException();
         }
         
         private async Task<string> CreateTask(string query, string server)
