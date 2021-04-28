@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,20 +20,17 @@ namespace ClusterClient.Clients
 
         public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
-            var tasks = servers.Select(server => Task<string>.Factory.StartNew(() => CreateTask(query, server).Result)).ToList();
-            var sw = Stopwatch.StartNew();
-            var waiter = timeout.Duration();
-            while (sw.Elapsed < timeout)
+            var tasks = servers.Select(server => Utilities.CreateRequest(server + "?query=" + query))
+                .Select(ProcessRequestAsync).ToList();
+            while (true)
             {
                 var res = await Task.Factory.StartNew(() => Task.WaitAny(tasks.ToArray(), timeout));
-                if (res != -1)
-                {
-                    if(tasks[res].IsCompletedSuccessfully)
-                        return tasks[res].Result;
-                    tasks.RemoveAll(x => x.IsFaulted);
-                    waiter = waiter.Subtract(sw.Elapsed);
-                }else
+                if (res == -1)
                     break;
+                
+                if(tasks[res].IsCompletedSuccessfully)
+                    return tasks[res].Result;
+                tasks.Remove(tasks[res]);
             }
             throw new TimeoutException();
         }
