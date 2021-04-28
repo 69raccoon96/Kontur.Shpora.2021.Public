@@ -40,7 +40,7 @@ namespace ClusterClient
                 task.Start();
                 tasks.Add(task);
                 index++;
-                var currentIndex = Task.WaitAny(tasks.ToArray(), TimeSpan.FromMilliseconds(delta));
+                var currentIndex = await Task.Factory.StartNew(() =>Task.WaitAny(tasks.ToArray(), TimeSpan.FromMilliseconds(delta)));
 
                 if (currentIndex != -1)
                 {
