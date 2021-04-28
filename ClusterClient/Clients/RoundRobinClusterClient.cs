@@ -22,26 +22,22 @@ namespace ClusterClient.Clients
         public async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             var index = 0;
-            var delta = (int) timeout.TotalMilliseconds / (_servers.Length);
+            var delta =  timeout.Divide(_servers.Length);
             var goodServers = _servers.Length;
             var sw = Stopwatch.StartNew();
-            //while(true)
             while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
             {
                 var currentServer = _servers[index];
                 var task = Task.Factory.StartNew(() => CreateTask(query, currentServer).Result);
 
-                var currentIndex = Task.WaitAny(new Task[] {task}, TimeSpan.FromMilliseconds(delta));
+                var currentIndex = await Task.Factory.StartNew(() => Task.WaitAny(new Task[] {task}, delta));
 
                 if (currentIndex != -1 )
                 {
                     if(task.IsCompletedSuccessfully)
                         return task.Result;
-                    else
-                    {
-                        goodServers--;
-                        delta = (int) timeout.TotalMilliseconds / goodServers;
-                    }
+                    goodServers--;
+                    delta = timeout.Subtract(sw.Elapsed).Divide(goodServers);
                 }
 
                 index++;

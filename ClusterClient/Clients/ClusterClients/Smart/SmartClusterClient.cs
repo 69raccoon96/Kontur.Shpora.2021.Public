@@ -31,7 +31,7 @@ namespace ClusterClient
             var servers = _serversManager.ServersAddresses;
             var index = 0;
             var tasks = new List<Task<string>>();
-            var delta = (int) timeout.TotalMilliseconds / (serversCount);
+            var delta = timeout.Divide(serversCount);
             var sw = Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
             {
@@ -40,14 +40,15 @@ namespace ClusterClient
                 task.Start();
                 tasks.Add(task);
                 index++;
-                var currentIndex = await Task.Factory.StartNew(() =>Task.WaitAny(tasks.ToArray(), TimeSpan.FromMilliseconds(delta)));
+                var currentIndex = await Task.Factory.StartNew(() =>Task.WaitAny(tasks.ToArray(), delta));
 
                 if (currentIndex != -1)
                 {
                     if (tasks[currentIndex].IsCompletedSuccessfully)
                         return tasks[currentIndex].Result;
+                    tasks = tasks.Where(x => !x.IsFaulted).ToList();
                 }
-                tasks = tasks.Where(x => !x.IsFaulted).ToList();
+                
 
             }
             throw new TimeoutException();
