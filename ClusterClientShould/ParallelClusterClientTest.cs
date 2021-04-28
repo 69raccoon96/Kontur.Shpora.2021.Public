@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using ClusterClient;
@@ -12,7 +12,7 @@ namespace ClusterTests
 {
 	public class ParallelClusterClientTest : ClusterTest
 	{
-		protected override ParallelClusterClient  CreateClient(string[] replicaAddresses)
+		protected override IClient  CreateClient(string[] replicaAddresses)
 			=> new ParallelClusterClient(replicaAddresses);
 		[Test]
 		public void ShouldReturnSuccessWhenLastReplicaIsGoodAndOthersAreSlow()
@@ -56,4 +56,4 @@ namespace ClusterTests
             sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(Fast), TimeSpan.FromMilliseconds(Epsilon));
         }
     }
-}*/
+}

@@ -15,14 +15,12 @@ namespace ClusterClient
         public int ServersCount { get; }
         private ServerData[] SortedServers { get; set;}
         private readonly Dictionary<string, ServerData> _servers;
-        private readonly string[] _serversAddresses;
+        public string[] ServersAddresses { get; }
         private int CurrentIndex { get; set; }
 
-        public ServersManager(IArgumentParser argumentParser, string[] args)
+        public ServersManager(string[] addresses)
         {
-            if (!argumentParser.TryGetReplicaAddresses(args, out var addresses))
-                addresses = args;
-            _serversAddresses = addresses;
+            ServersAddresses = addresses;
             ServersCount = addresses.Length;
             SortedServers = new ServerData[addresses.Length];
             CurrentIndex = 0;
@@ -70,7 +68,7 @@ namespace ClusterClient
             var requests = new List<RequestResult>();
             for (var i = 0; i < 3; i++)
             {
-                foreach (var server in _serversAddresses)
+                foreach (var server in ServersAddresses)
                 {
                     var clearedIp = regex.Match(server).Groups.Values.ElementAt(1).Value;
                     var resultPing = Utilities.PingAddrAsync(IPAddress.Parse(clearedIp)).Result;

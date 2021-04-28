@@ -75,7 +75,7 @@ namespace ClusterTests
 			action.Should().Throw<Exception>();
 		}
 
-		protected abstract SmartClusterClient CreateClient(string[] replicaAddresses);
+		protected abstract IClient CreateClient(string[] replicaAddresses);
 
 		[SetUp]
 		public void SetUp() => clusterServers = new List<ClusterServer>();
@@ -103,7 +103,7 @@ namespace ClusterTests
 			return server;
 		}
 
-		protected TimeSpan[] ProcessRequests(double timeout, int take = 5)
+		protected TimeSpan[] ProcessRequests(double timeout, int take = 3)
 		{
 			var addresses = clusterServers
 				.Select(cs => $"http://127.0.0.1:{cs.ServerOptions.Port}/{cs.ServerOptions.MethodName}/")
@@ -113,6 +113,7 @@ namespace ClusterTests
 
 			Console.WriteLine("Testing {0} started", client.GetType());
 			var result = Task.WhenAll(Enumerable.Range(0, take)
+				.AsParallel()
 				.Select(i => i.ToString("x8")).Select(
 				async query =>
 				{

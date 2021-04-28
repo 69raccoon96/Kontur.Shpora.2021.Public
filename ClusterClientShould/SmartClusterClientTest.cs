@@ -12,8 +12,8 @@ namespace ClusterTests
 {
 	public class SmartClusterClientTest : ClusterTest
 	{
-		protected override SmartClusterClient CreateClient(string[] replicaAddresses)
-			=> new SmartClusterClient(new ServersManager(new FCLArgumentParser(),replicaAddresses ),LogManager.GetLogger(typeof(SmartClusterClientTest)));
+		protected override IClient CreateClient(string[] replicaAddresses)
+			=> new SmartClusterClient(LogManager.GetLogger(typeof(SmartClusterClientTest)), replicaAddresses);
 
 		[Test]
 		public void ShouldReturnSuccessWhenLastReplicaIsGoodAndOthersAreSlow()

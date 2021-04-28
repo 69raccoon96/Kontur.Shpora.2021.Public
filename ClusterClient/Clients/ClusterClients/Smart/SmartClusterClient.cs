@@ -19,52 +19,54 @@ namespace ClusterClient
         private bool NoGoodServers = false;
         public override ILog Log { get; }
 
-        public SmartClusterClient(IServerManager serverManager, ILog log) : base(null)
+        public SmartClusterClient(ILog log, string[] replicaAddressees) : base(replicaAddressees)
         {
-            _serversManager = serverManager;
+            _serversManager = new ServersManager(replicaAddressees);
             Log = log;
         }
 
         public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
-            
             var serversCount = _serversManager.ServersCount;
-            var tasks = new List<Task<RequestResult>>();
-            var delta = (int) timeout.TotalMilliseconds / serversCount;
+            var servers = _serversManager.ServersAddresses;
+            var index = 0;
+            var tasks = new List<Task<string>>();
+            var delta = (int) timeout.TotalMilliseconds / (serversCount);
             var sw = Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
             {
-                var task = new Task<RequestResult>(() => CreateTask(query));
+                var index1 = index;
+                var task = new Task<string>(() => CreateTask(query, servers[index1]).Result);
                 task.Start();
                 tasks.Add(task);
-                Task.WaitAny(tasks.ToArray(), TimeSpan.FromMilliseconds(delta));
-                if (tasks.Any(x => x.Status == TaskStatus.RanToCompletion && x.Result.IsSuccess))
-                    break;
-            }
-            var completedTask = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully && x.Result.IsSuccess);
-            _serversManager.Restart();
-            if(completedTask?.Result.Result == null)
-                throw new TimeoutException();
-            return completedTask.Result.Result;
+                index++;
+                var currentIndex = Task.WaitAny(tasks.ToArray(), TimeSpan.FromMilliseconds(delta));
 
+                if (currentIndex != -1)
+                {
+                    if (tasks[currentIndex].IsCompletedSuccessfully)
+                        return tasks[currentIndex].Result;
+                }
+                tasks = tasks.Where(x => !x.IsFaulted).ToList();
+
+            }
+            throw new TimeoutException();
         }
 
-        private  RequestResult CreateTask(string query)
+        private async Task<string> CreateTask(string query, string server)
         {
-            var server = _serversManager.GetBestServer();
             var webRequest = Utilities.CreateRequest(server + "?query=" + query);
             Log.InfoFormat($"Processing {webRequest.RequestUri}");
-            var sw = Stopwatch.StartNew();
             try
             {   
                 Console.WriteLine($"Await answer from {server}");
-                var reqResult = ProcessRequestAsync(webRequest);
+                var reqResult = await ProcessRequestAsync(webRequest);
                //var reqResult = await ProcessRequestAsync2(server); 
-               return new RequestResult(server, true, reqResult.Result, new TimeSpan(sw.ElapsedTicks));
+               return reqResult;
             }
             catch
             {
-                return new RequestResult(server);
+               throw new TimeoutException();
             }
         }
 

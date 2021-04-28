@@ -5,6 +5,7 @@ namespace ClusterClient.Clients.ServersManager
 {
     public interface IServerManager
     {
+        public string[] ServersAddresses { get; }
         public int ServersCount { get; }
         public string GetBestServer();
 
