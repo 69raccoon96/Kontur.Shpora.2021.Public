@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using ClusterClient.Clients;
 using FluentAssertions;
+using log4net;
 using NUnit.Framework;
 
 namespace ClusterTests
@@ -10,7 +11,7 @@ namespace ClusterTests
 	public class RoundRobinClusterClientTest : ClusterTest
 	{
 		protected override IClient CreateClient(string[] replicaAddresses)
-			=> new RoundRobinClusterClient(replicaAddresses);
+			=> new RoundRobinClusterClient(LogManager.GetLogger(typeof(SmartClusterClientTest)), replicaAddresses);
 
 		[Test]
 		public override void Client_should_return_success_when_timeout_is_close()

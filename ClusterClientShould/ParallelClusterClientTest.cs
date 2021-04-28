@@ -13,7 +13,7 @@ namespace ClusterTests
 	public class ParallelClusterClientTest : ClusterTest
 	{
 		protected override IClient  CreateClient(string[] replicaAddresses)
-			=> new ParallelClusterClient(replicaAddresses);
+			=> new ParallelClusterClient(LogManager.GetLogger(typeof(SmartClusterClientTest)), replicaAddresses);
 		[Test]
 		public void ShouldReturnSuccessWhenLastReplicaIsGoodAndOthersAreSlow()
 		{

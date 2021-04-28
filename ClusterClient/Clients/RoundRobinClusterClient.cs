@@ -10,16 +10,17 @@ using log4net;
 
 namespace ClusterClient.Clients
 {
-    public class RoundRobinClusterClient : IClient
+    public class RoundRobinClusterClient : ClusterClientBase
     {
         private readonly string[] _servers;
 
-        public RoundRobinClusterClient(string[] replicaAddresses)
+        public RoundRobinClusterClient(ILog log, string[] replicaAddresses) : base(replicaAddresses)
         {
             this._servers = replicaAddresses;
+            Log = log;
         }
 
-        public async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             var index = 0;
             var delta =  timeout.Divide(_servers.Length);
@@ -28,7 +29,7 @@ namespace ClusterClient.Clients
             while (sw.Elapsed < timeout)
             {
                 var currentServer = _servers[index];
-                var task = Task.Factory.StartNew(() => CreateTask(query, currentServer).Result);
+                var task = Task.Factory.StartNew(() => CreateTask(query, currentServer));
 
                 var currentIndex = await Task.Factory.StartNew(() => Task.WaitAny(new Task[] {task}, delta));
 
@@ -46,31 +47,6 @@ namespace ClusterClient.Clients
             throw new TimeoutException();
         }
 
-        private async Task<string> CreateTask(string query, string server)
-        {
-            var webRequest = Utilities.CreateRequest(server + "?query=" + query);
-            Log.InfoFormat($"Processing {webRequest.RequestUri}");
-            try
-            {
-                Console.WriteLine($"Await answer from {server}");
-                var reqResult = await ProcessRequestAsync(webRequest);
-                return reqResult;
-            }
-            catch
-            {
-                throw new TimeoutException();
-            }
-        }
-
-        private async Task<string> ProcessRequestAsync(WebRequest request)
-        {
-            var timer = Stopwatch.StartNew();
-            using var response = await request.GetResponseAsync();
-            var result = await new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEndAsync();
-            Log.InfoFormat("Response from {0} received in {1} ms", request.RequestUri, timer.ElapsedMilliseconds);
-            return result;
-        }
-
-        public ILog Log => LogManager.GetLogger(typeof(RoundRobinClusterClient));
+        public override ILog Log { get; }
     }
 }

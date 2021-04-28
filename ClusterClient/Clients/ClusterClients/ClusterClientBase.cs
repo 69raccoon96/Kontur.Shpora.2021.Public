@@ -10,7 +10,7 @@ namespace ClusterClient.Clients
 {
     public abstract class ClusterClientBase : IClient
     {
-        protected string[] ReplicaAddresses { get; set; }
+        public string[] ReplicaAddresses { get; set; }
 
         protected ClusterClientBase(string[] replicaAddresses)
         {
@@ -33,11 +33,26 @@ namespace ClusterClient.Clients
         protected async Task<string> ProcessRequestAsync(WebRequest request)
         {
             var timer = Stopwatch.StartNew();
-            using (var response = await request.GetResponseAsync())
+            using var response = await request.GetResponseAsync();
+            var result = await new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEndAsync();
+            Log.InfoFormat("Response from {0} received in {1} ms", request.RequestUri, timer.ElapsedMilliseconds);
+            return result;
+        }
+
+        protected string CreateTask(string query, string server)
+        {
+            var webRequest = Utilities.CreateRequest(server + "?query=" + query);
+            Log.InfoFormat($"Processing {webRequest.RequestUri}");
+            try
+            {   
+                Console.WriteLine($"Await answer from {server}");
+                var reqResult = ProcessRequestAsync(webRequest);
+                //var reqResult = await ProcessRequestAsync2(server); 
+                return reqResult.Result;
+            }
+            catch
             {
-                var result = await new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEndAsync();
-                Log.InfoFormat("Response from {0} received in {1} ms", request.RequestUri, timer.ElapsedMilliseconds);
-                return result;
+                throw new TimeoutException();
             }
         }
     }
