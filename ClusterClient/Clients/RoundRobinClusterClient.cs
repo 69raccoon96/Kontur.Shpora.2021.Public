@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
@@ -9,13 +12,67 @@ namespace ClusterClient.Clients
 {
     public class RoundRobinClusterClient : IClient
     {
-        public RoundRobinClusterClient(string[] replicaAddresses) 
+        private readonly string[] _servers;
+
+        public RoundRobinClusterClient(string[] replicaAddresses)
         {
+            this._servers = replicaAddresses;
         }
 
-        public Task<string?> ProcessRequestAsync(string query, TimeSpan timeout)
+        public async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            var index = 0;
+            var delta = (int) timeout.TotalMilliseconds / (_servers.Length);
+            var goodServers = _servers.Length;
+            var sw = Stopwatch.StartNew();
+            //while(true)
+            while (sw.ElapsedMilliseconds < timeout.TotalMilliseconds)
+            {
+                var currentServer = _servers[index];
+                var task = Task.Factory.StartNew(() => CreateTask(query, currentServer).Result);
+
+                var currentIndex = Task.WaitAny(new Task[] {task}, TimeSpan.FromMilliseconds(delta));
+
+                if (currentIndex != -1 )
+                {
+                    if(task.IsCompletedSuccessfully)
+                        return task.Result;
+                    else
+                    {
+                        goodServers--;
+                        delta = (int) timeout.TotalMilliseconds / goodServers;
+                    }
+                }
+
+                index++;
+            }
+
+            throw new TimeoutException();
+        }
+
+        private async Task<string> CreateTask(string query, string server)
+        {
+            var webRequest = Utilities.CreateRequest(server + "?query=" + query);
+            Log.InfoFormat($"Processing {webRequest.RequestUri}");
+            try
+            {
+                Console.WriteLine($"Await answer from {server}");
+                var reqResult = await ProcessRequestAsync(webRequest);
+                return reqResult;
+            }
+            catch
+            {
+                throw new TimeoutException();
+            }
+        }
+
+        private async Task<string> ProcessRequestAsync(WebRequest request)
+        {
+            var timer = Stopwatch.StartNew();
+            using var response = await request.GetResponseAsync();
+            var result = await new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEndAsync();
+            Log.InfoFormat("Response from {0} received in {1} ms", request.RequestUri, timer.ElapsedMilliseconds);
+            return result;
         }
 
         public ILog Log => LogManager.GetLogger(typeof(RoundRobinClusterClient));

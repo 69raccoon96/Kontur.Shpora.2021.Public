@@ -103,7 +103,7 @@ namespace ClusterTests
 			return server;
 		}
 
-		protected TimeSpan[] ProcessRequests(double timeout, int take = 3)
+		protected TimeSpan[] ProcessRequests(double timeout, int take = 1)
 		{
 			var addresses = clusterServers
 				.Select(cs => $"http://127.0.0.1:{cs.ServerOptions.Port}/{cs.ServerOptions.MethodName}/")

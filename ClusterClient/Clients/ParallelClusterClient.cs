@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace ClusterClient.Clients
             servers = replicaAddresses;
         }
 
-        public override Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
         {
             var tasks = new List<Task<string>>();
             foreach (var server in servers)
@@ -23,17 +24,16 @@ namespace ClusterClient.Clients
                 tasks.Add(Task<string>.Factory.StartNew(() =>
                 {
                     var webRequest = Utilities.CreateRequest(server + "?query=" + query);
-                    var res = ProcessRequestAsync(webRequest);
-                    return res.Result;
+                    return ProcessRequestAsync(webRequest).Result;
                 }));
             }
 
-            var index = Task.WaitAny(tasks.ToArray(), timeout);
-            
+            await Task.Delay(timeout);
             var res = tasks.FirstOrDefault(x => x.IsCompletedSuccessfully);
-            if(res == null)
-                throw new TimeoutException();
-            return Task.FromResult( res.Result);
+            if (res != null)
+                return res.Result;
+            throw new TimeoutException();
+
         }
 
         public override ILog Log => LogManager.GetLogger(typeof(ParallelClusterClient));

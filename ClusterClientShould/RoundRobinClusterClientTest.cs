@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using ClusterClient.Clients;
@@ -9,7 +9,7 @@ namespace ClusterTests
 {
 	public class RoundRobinClusterClientTest : ClusterTest
 	{
-		protected override ParallelClusterClient CreateClient(string[] replicaAddresses)
+		protected override IClient CreateClient(string[] replicaAddresses)
 			=> new RoundRobinClusterClient(replicaAddresses);
 
 		[Test]
@@ -76,4 +76,4 @@ namespace ClusterTests
 				time.Should().BeCloseTo(TimeSpan.FromMilliseconds(5500), TimeSpan.FromMilliseconds(Epsilon));
 		}
 	}
-}*/
+}
